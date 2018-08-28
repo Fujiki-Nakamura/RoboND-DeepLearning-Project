@@ -97,6 +97,7 @@ class BatchIteratorSimple(Iterator):
         self.batch_size = batch_size
         self.training = training
         self.image_shape = tuple(image_shape)
+        self.seq = seq
 
         im_files = sorted(glob(os.path.join(data_folder, 'images', '*.jpeg')))
         mask_files = sorted(glob(os.path.join(data_folder, 'masks', '*.png')))
@@ -165,4 +166,8 @@ class BatchIteratorSimple(Iterator):
         if not self.training:
             return batch_x
         else:
+            if self.seq is not None:
+                seq = self.seq.to_deterministic()
+                batch_x = seq.augment_images(batch_x)
+                batch_y = seq.augment_images(batch_y)
             return batch_x, batch_y
