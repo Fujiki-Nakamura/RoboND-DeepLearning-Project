@@ -155,8 +155,8 @@ class BatchIteratorSimple(Iterator):
                 if gt_image.shape[0] != self.image_shape[0]:
                     gt_image = misc.imresize(gt_image, self.image_shape)
 
-                #if self.shift_aug:
-                #    image, gt_image = shift_and_pad_augmentation(image, gt_image)
+                if self.shift_aug:
+                    image, gt_image = shift_and_pad_augmentation(image, gt_image)
 
                 image = preprocess_input(image.astype(np.float32))
                 batch_x[e, :, :, :] = image
