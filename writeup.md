@@ -8,8 +8,9 @@ The task of Semantic Segmentation is a task of classifying each pixel in image. 
 
 However, this approach of sliding window and classification by convnets is very computationary expensive. So, the network architecture called Fully Convolutional Network (FCN) is usually used in Semantic Segmentation.
 
-![Encoder-Decoder Network][image1]
-Figure 1. Encoder-Decoder network architecture (from [Learning Deconvolution Network for Semantic Segmentation](http://cvlab.postech.ac.kr/research/deconvnet/))
+| ![Encoder-Decoder Network][image1] |
+|:--:|
+| Figure 1. Encoder-Decoder network architecture (from [Learning Deconvolution Network for Semantic Segmentation](http://cvlab.postech.ac.kr/research/deconvnet/)) |
 
 The concept of FCN is visualized in Figure 1. It mainly has two parts: Encoder and Decoder.
 </br>In the encoder, FCN extracts useful features by convolution and downsampling as convnets do for classification.
@@ -28,14 +29,15 @@ After the encoder part, 1x1 convolution layer follows.
 
 In the decoder part, the model has 5 consecutive layers of bilinear upsampling and covolution. Each decoding layer takes as input the output of the corresponding layer in the encoder part as well as the previous layer's output. By concatenating the two outputs, each decoding layer can preserve spatially detailed information, which is necessary to have accurate semantic segmentation map.
 
-All of the convolution layers in the encoder and the decoder are separable convolution. Separable convolution convolve inputs separately in channelwise and spacewise. By separable convolution, we can reduce the computation of the convolution.
+All of the convolution layers in the encoder and the decoder are separable convolution. Separable convolution convolve inputs separately in channelwise and pointwise. By separable convolution, we can reduce the computation of the convolution.
 
-The architecture I used in this project is shown below (Figure 2).
+The architecture I used in this project is visualized below (Figure 2).
 
-![Architecture][image2]
-Figure 2. The network architecture for this project.
+| ![alt Architecture](./assets/architecture.png)|
+| :--: |
+|Figure 2. The network architecture for this project.|
 
-The model trained of the Follow Me dataset is specific to this problem (segmenting human or not), so we can't use the trained model for other problems like segmenting dogs, cats, cars, etc. However, the network architecture is not specific to this problem and can be adopted for other problems. We can use the network architecture and train models for other problems if we have enough datasets and annotations (i.e. segmentation masks).
+The model trained on the Follow Me dataset is specific to this problem (segmenting human or not), so we can't use the trained model for other problems like segmenting dogs, cats, cars, etc. However, the network architecture is not specific to this problem and can be adopted for other problems. We can use the network architecture and train models for other problems if we have enough datasets and annotations (i.e. segmentation masks).
 
 ## Hyper Parameters
 **batch size**. I decided the batch size so that I could train the model on my GPU without out of memory errors, and I found that the batch size = 64 worked best.
