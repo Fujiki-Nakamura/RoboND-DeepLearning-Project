@@ -42,6 +42,7 @@ def preprocess_input(x):
     x = x*2.
     return x
 
+
 def get_patches(image, image_mask):
     shape = image.shape
     ry1 = np.random.randint(0, int(shape[0] * 0.15))
@@ -65,7 +66,7 @@ def shift_and_pad_augmentation(image, image_mask):
     shape = image.shape
     new_im = np.zeros(shape)
     new_mask = np.zeros(image_mask.shape)
-    new_mask[:,:,0] = 1
+    new_mask[:, :, 0] = 1
 
     im_patch, mask_patch = get_patches(image, image_mask)
     patch_shape = im_patch.shape
@@ -85,8 +86,10 @@ def shift_and_pad_augmentation(image, image_mask):
 
 
 class BatchIteratorSimple(Iterator):
-    def __init__(self, data_folder, batch_size, image_shape,
-            num_classes=3, training=True, shuffle=True, seed=None, shift_aug=False):
+    def __init__(
+        self, data_folder, batch_size, image_shape,
+        num_classes=3, training=True, shuffle=True, seed=None, shift_aug=False, seq=None
+    ):
 
         self.num_classes = num_classes
         self.shift_aug = shift_aug
@@ -94,21 +97,24 @@ class BatchIteratorSimple(Iterator):
         self.batch_size = batch_size
         self.training = training
         self.image_shape = tuple(image_shape)
+        self.seq = seq
 
         im_files = sorted(glob(os.path.join(data_folder, 'images', '*.jpeg')))
         mask_files = sorted(glob(os.path.join(data_folder, 'masks', '*.png')))
 
         if len(im_files) == 0:
-            raise ValueError('No image files found, check your image diractories')
+            raise ValueError(
+                'No image files found, check your image diractories')
 
         if len(mask_files) == 0:
-            raise ValueError('No mask files found, check your mask directories')
+            raise ValueError(
+                'No mask files found, check your mask directories')
 
         self.file_tuples = list(zip(im_files, mask_files))
         self.n = len(self.file_tuples)
 
-        super(BatchIteratorSimple, self).__init__(self.n, batch_size, shuffle, seed)
-
+        super(BatchIteratorSimple, self).__init__(
+            self.n, batch_size, shuffle, seed)
 
     def next(self):
         """For python 2.x.
@@ -118,18 +124,19 @@ class BatchIteratorSimple(Iterator):
         # Keeps under lock only the mechanism which advances
         # the indexing of each batch.
         with self.lock:
-          index_array, current_index, current_batch_size = next(
-              self.index_generator)
+            index_array, current_index, current_batch_size = next(
+                self.index_generator)
         # The transformation of images is not under thread lock
         # so it can be done in parallel
-        
-        batch_x = np.zeros((current_batch_size,) + self.image_shape, dtype=K.floatx())
 
+        batch_x = np.zeros((current_batch_size,) +
+                           self.image_shape, dtype=K.floatx())
 
         if self.training:
             batch_y = np.zeros(
-                    (current_batch_size,) + self.image_shape[:2] + (self.num_classes,),
-                    dtype=K.floatx())
+                (current_batch_size,) +
+                self.image_shape[:2] + (self.num_classes,),
+                dtype=K.floatx())
 
         for e, i in enumerate(index_array):
             # load labels of the person in focus
@@ -141,24 +148,26 @@ class BatchIteratorSimple(Iterator):
 
             if not self.training:
                 image = preprocess_input(image.astype(np.float32))
-                batch_x[e,:,:,:] = image
+                batch_x[e, :, :, :] = image
                 continue
 
             else:
-                gt_image = misc.imread(file_tuple[1]).clip(0,1) 
+                gt_image = misc.imread(file_tuple[1]).clip(0, 1)
                 if gt_image.shape[0] != self.image_shape[0]:
                     gt_image = misc.imresize(gt_image, self.image_shape)
 
-                #if self.shift_aug:
-                #    image, gt_image = shift_and_pad_augmentation(image, gt_image)
+                if self.shift_aug:
+                    image, gt_image = shift_and_pad_augmentation(image, gt_image)
 
                 image = preprocess_input(image.astype(np.float32))
-                batch_x[e,:,:,:] = image
-                batch_y[e,:,:,:] = gt_image
-
+                batch_x[e, :, :, :] = image
+                batch_y[e, :, :, :] = gt_image
 
         if not self.training:
             return batch_x
-
         else:
+            if self.seq is not None:
+                seq = self.seq.to_deterministic()
+                batch_x = seq.augment_images(batch_x)
+                batch_y = seq.augment_images(batch_y)
             return batch_x, batch_y
