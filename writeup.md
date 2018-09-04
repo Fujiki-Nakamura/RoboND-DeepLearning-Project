@@ -9,7 +9,7 @@ The task of Semantic Segmentation is a task of classifying each pixel in image. 
 However, this approach of sliding window and classification by convnets is very computationary expensive. So, the network architecture called Fully Convolutional Network (FCN) is usually used in Semantic Segmentation.
 
 ![Encoder-Decoder Network][image1]
-Figure 1 (from [Learning Deconvolution Network for Semantic Segmentation](http://cvlab.postech.ac.kr/research/deconvnet/))
+Figure 1. Encoder-Decoder network architecture (from [Learning Deconvolution Network for Semantic Segmentation](http://cvlab.postech.ac.kr/research/deconvnet/))
 
 The concept of FCN is visualized in Figure 1. It mainly has two parts: Encoder and Decoder.
 </br>In the encoder, FCN extracts useful features by convolution and downsampling as convnets do for classification.
@@ -30,7 +30,10 @@ In the decoder part, the model has 5 consecutive layers of bilinear upsampling a
 
 All of the convolution layers in the encoder and the decoder are separable convolution. Separable convolution convolve inputs separately in channelwise and spacewise. By separable convolution, we can reduce the computation of the convolution.
 
+The architecture I used in this project is shown below (Figure 2).
+
 ![Architecture][image2]
+Figure 2. The network architecture for this project.
 
 The model trained of the Follow Me dataset is specific to this problem (segmenting human or not), so we can't use the trained model for other problems like segmenting dogs, cats, cars, etc. However, the network architecture is not specific to this problem and can be adopted for other problems. We can use the network architecture and train models for other problems if we have enough datasets and annotations (i.e. segmentation masks).
 
